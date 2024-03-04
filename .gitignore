@@ -1,0 +1,5 @@
+/config.toml
+/Auto-Ruijie-Tool.log
+/.idea
+dist/
+/.goreleaser.yaml
