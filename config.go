@@ -8,12 +8,12 @@ import (
 )
 
 type Config struct {
-	URL        map[string]string
-	LoginData  map[string]string
-	LogoutData map[string]string
-	Headers    map[string]string
-	Cookie     map[string]string
-	Options    map[string]string
+	URL        map[string]string `toml:"url"`
+	LoginData  map[string]string `toml:"login_data"`
+	LogoutData map[string]string `toml:"logout_data"`
+	Headers    map[string]string `toml:"headers"`
+	Cookie     map[string]string `toml:"cookie"`
+	Options    map[string]string `toml:"options"`
 }
 
 var instance *Config
