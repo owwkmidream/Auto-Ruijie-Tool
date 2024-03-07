@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"github.com/gofrs/flock"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -98,11 +100,31 @@ func TestNet(url string) bool {
 	return false
 }
 
+func tryLockFile(path string) (*flock.Flock, error) {
+	fileLock := flock.New(path)
+	locked, err := fileLock.TryLock()
+	if err != nil {
+		return nil, err
+	}
+	if !locked {
+		return nil, errors.New("文件已被另一个进程锁定")
+	}
+	return fileLock, nil
+}
+
 func main() {
 	InitLog()
-	log.Info("程序启动--------------------------------------")
 	notify = GetInstanceNotify()
 	config = GetInstance()
+
+	fileLock, err := tryLockFile("./.ruijie.lock")
+	if err != nil {
+		notify.Send("运行失败", err.Error())
+		log.Fatalf("无法锁定文件: %v", err)
+	}
+	defer fileLock.Unlock()
+
+	log.Info("程序启动--------------------------------------")
 
 	// 检测校园网环境，状态码200-299表示正常
 	log.Info("检测校园网环境")

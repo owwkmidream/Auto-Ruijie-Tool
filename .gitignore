@@ -2,4 +2,4 @@
 /Auto-Ruijie-Tool.log
 /.idea
 dist/
-/.goreleaser.yaml
+/.ruijie.lock
