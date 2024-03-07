@@ -74,18 +74,20 @@ func Logout() bool {
 
 func TestNet(url string) bool {
 	resp, err := http.Get(url)
+	if err != nil {
+		log.Error("检测环境出错：%v", url, err)
+		return false
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Error("无法关闭body", err)
+		}
+	}()
+
 	if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
 		return true
 	}
-	if err != nil {
-		log.Error("检测校园网环境出错", err)
-	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Error("关闭Body出错", err)
-		}
-	}(resp.Body)
 
 	return false
 }
