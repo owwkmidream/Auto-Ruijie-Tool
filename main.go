@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 var config *Config
@@ -152,6 +153,7 @@ func main() {
 	// 登录
 	if res = Login(); res {
 		log.Info("登录成功")
+		time.Sleep(1 * time.Second)
 		if TestNet(config.URL["check"]) {
 			notify.Send("登录成功", "网络已连接")
 		} else {
