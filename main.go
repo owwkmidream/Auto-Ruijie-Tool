@@ -14,35 +14,29 @@ import (
 var config *Config
 var notify *Notify
 
-// Login 函数用于执行登录操作
-func Login() bool {
+// SendRequest 函数用于执行请求
+func SendRequest(endpoint string, requestData map[string]string) bool {
 	data := url.Values{}
-	// 遍历配置中的登录数据，将其添加到url.Values对象中
-	for key, value := range config.LoginData {
+	for key, value := range requestData {
 		data.Set(key, value)
 	}
 
 	client := &http.Client{}
-	// 创建一个新的HTTP请求，方法是POST，URL是配置中的主机地址加上登录路径，请求体是编码后的登录数据
-	req, err := http.NewRequest("POST", config.URL["host"]+config.URL["login"], strings.NewReader(data.Encode()))
-	// 如果在创建请求时发生错误，返回nil和错误
+	req, err := http.NewRequest("POST", config.URL["host"]+config.URL[endpoint], strings.NewReader(data.Encode()))
 	if err != nil {
 		log.Error("创建请求时发生错误", err)
 		return false
 	}
 
-	// 遍历配置中的头部数据，将其添加到请求的头部
 	for key, value := range config.Headers {
 		req.Header.Add(key, value)
 	}
-	// 使用客户端发送请求，获取响应
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error("发送请求时发生错误", err)
 		return false
 	}
 
-	// 读取响应体
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Error("读取响应体时发生错误", err)
@@ -60,27 +54,23 @@ func Login() bool {
 
 	// 获取 result 字段
 	res, _ := result["result"]
+	log.Info("响应：", result)
+	if res == "success" {
 
-	return res == "success"
+		return true
+	} else {
+		log.Error("请求体：", resp.Request)
+		return false
+	}
 }
 
-//func Logout() (*http.Response, error) {
-//	client := &http.Client{}
-//	req, err := http.NewRequest("POST", config.URL["host"]+config.URL["logout"], nil)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	for key, value := range config.Headers {
-//		req.Header.Add(key, value)
-//	}
-//	resp, err := client.Do(req)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return resp, nil
-//}
+func Login() bool {
+	return SendRequest("login", config.LoginData)
+}
+
+func Logout() bool {
+	return SendRequest("logout", config.LogoutData)
+}
 
 func TestNet(url string) bool {
 	resp, err := http.Get(url)
