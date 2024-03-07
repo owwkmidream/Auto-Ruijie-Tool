@@ -101,9 +101,11 @@ func GetDefaultConfig() Config {
 			"passwordEncrypt": "",
 		},
 		LogoutData: map[string]string{},
-		Headers:    map[string]string{},
-		Cookie:     map[string]string{},
-		Options:    map[string]string{},
+		Headers: map[string]string{
+			"Content-Type": "application/x-www-form-urlencoded",
+		},
+		Cookie:  map[string]string{},
+		Options: map[string]string{},
 	}
 	return defaultConfig
 }
