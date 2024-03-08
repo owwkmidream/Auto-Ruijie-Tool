@@ -74,7 +74,11 @@ func Logout() bool {
 }
 
 func TestNet(url string) bool {
-	resp, err := http.Get(url)
+	client := &http.Client{
+		Timeout: time.Second * 1,
+	}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		log.Error("检测环境出错：%v", url, err)
 		return false
@@ -153,12 +157,7 @@ func main() {
 	// 登录
 	if res = Login(); res {
 		log.Info("登录成功")
-		time.Sleep(1 * time.Second)
-		if TestNet(config.URL["check"]) {
-			notify.Send("登录成功", "网络已连接")
-		} else {
-			notify.Send("登录成功", "网络未连接")
-		}
+		notify.Send("登录成功")
 	} else {
 		log.Error("登录失败")
 		notify.Send("登录失败", "请检查日志")
