@@ -251,11 +251,9 @@ func main() {
 		log.Info("校园网环境异常，循环检测60秒")
 		notify.Send("校园网环境异常", "循环检测60秒")
 		for i := 1; i <= 60; i++ {
-			res = TestNet(config.URL["host"])
-			if res {
+			log.Info("进行第", i, "次检测")
+			if res = TestNet(config.URL["host"]); res {
 				break
-			} else {
-				log.Info("进行第", i, "次检测")
 			}
 		}
 		if !res {
