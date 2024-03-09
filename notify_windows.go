@@ -61,6 +61,8 @@ func (n *Notify) Send(msgs ...string) {
 	n.notify.Title = msgs[0]
 	if len(msgs) > 1 {
 		n.notify.Message = msgs[1]
+	} else {
+		n.notify.Message = ""
 	}
 
 	err := n.notify.Push()
