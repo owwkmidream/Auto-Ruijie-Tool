@@ -3,11 +3,15 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/gofrs/flock"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"golang.org/x/text/transform"
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 )
