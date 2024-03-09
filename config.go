@@ -8,12 +8,15 @@ import (
 )
 
 type Config struct {
-	URL        map[string]string `toml:"url"`
-	LoginData  map[string]string `toml:"login_data"`
-	LogoutData map[string]string `toml:"logout_data"`
-	Headers    map[string]string `toml:"headers"`
-	Cookie     map[string]string `toml:"cookie"`
-	Options    map[string]string `toml:"options"`
+	URL           map[string]string `toml:"url"`
+	LoginData     map[string]string `toml:"login_data"`
+	LogoutData    map[string]string `toml:"logout_data"`
+	ManageParams  map[string]string `toml:"manage_params"`
+	Headers       map[string]string `toml:"headers"`
+	ManageHeaders map[string]string `toml:"manage_headers"`
+	Cookie        map[string]string `toml:"cookie"`
+	Options       map[string]string `toml:"options"`
+	KickParams    map[string]string `toml:"kick_params"`
 }
 
 var instance *Config
