@@ -62,11 +62,6 @@ func SendRequest(endpoint string, requestData map[string]string) bool {
 	log.Info("响应：", result)
 	if res == "success" {
 		return true
-	} else if msg := result["message"]; msg == "你使用的账号已达到同时在线用户数量上限!" {
-		notify.Send("登录失败", "你使用的账号已达到同时在线用户数量上限!")
-		log.Info("账户上限，执行踢出设备操作")
-		KickDevices()
-		return Login()
 	} else {
 		log.Error("请求体：", resp.Request)
 		return false
@@ -191,7 +186,13 @@ func KickDevices() bool {
 }
 
 func Login() bool {
-	return SendRequest("login", config.LoginData)
+	for i := 0; i < 3; i++ {
+		KickDevices()
+		if SendRequest("login", config.LoginData) {
+			return true
+		}
+	}
+	return false
 }
 
 func Logout() bool {
@@ -205,7 +206,7 @@ func TestNet(url string) bool {
 
 	resp, err := client.Get(url)
 	if err != nil {
-		log.Error("检测环境出错：%v", url, err)
+		log.Errorf("检测环境出错：%v %v", url, err)
 		return false
 	}
 
@@ -270,10 +271,18 @@ func main() {
 
 	// 检测是否已经登录
 	if TestNet(config.URL["check"]) {
-		log.Info("已经登录")
-		notify.Send("已经登录", "网络已连接")
+		log.Info("已经登录，执行下线操作")
 
-		// TODO: 是否需要退出登录
+		notify.Send("已经登录", "网络已连接，执行下线操作")
+
+		var msg string
+		if res = Logout(); res {
+			msg = "下线成功"
+		} else {
+			msg = "下线失败"
+		}
+		log.Info(msg)
+		notify.Send(msg)
 		return
 	}
 
