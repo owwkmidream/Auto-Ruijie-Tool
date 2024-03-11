@@ -88,10 +88,14 @@ func CreateConfig() error {
 func GetDefaultConfig() Config {
 	defaultConfig := Config{
 		URL: map[string]string{
-			"host":   "http://127.0.0.1",
-			"login":  "/eportal/InterFace.do?method=login",
-			"logout": "/eportal/InterFace.do?method=logout",
-			"check":  "https://connect.rom.miui.com/generate_204",
+			"host":        "http://127.0.0.1",
+			"login":       "/eportal/InterFace.do?method=login",
+			"logout":      "/eportal/InterFace.do?method=logout",
+			"check":       "https://connect.rom.miui.com/generate_204",
+			"manage_host": "http://127.0.0.1",
+			"get_cookie":  "/selfservice/module/userself/web/portal_business_detail.jsf",
+			"get_devices": "/selfservice/module/webcontent/web/onlinedevice_list.jsf",
+			"kick":        "/selfservice/module/userself/web/userself_ajax.jsf",
 		},
 		LoginData: map[string]string{
 			"userId":          "",
@@ -107,8 +111,19 @@ func GetDefaultConfig() Config {
 		Headers: map[string]string{
 			"Content-Type": "application/x-www-form-urlencoded",
 		},
+		ManageHeaders: map[string]string{
+			"Referer": "http://127.0.0.1",
+		},
 		Cookie:  map[string]string{},
 		Options: map[string]string{},
+		ManageParams: map[string]string{
+			"channel":  "",
+			"name":     "",
+			"password": "",
+			"ip":       "",
+			"callBack": "",
+			"index":    "",
+		},
 	}
 	return defaultConfig
 }
