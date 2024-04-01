@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -252,10 +253,12 @@ func main() {
 	// 检测校园网环境，状态码200-299表示正常
 	log.Info("检测校园网环境")
 	res := TestNet(config.URL["host"])
+	timeout, _ := strconv.Atoi(config.Options["timeout"])
+
 	if !res {
-		log.Info("校园网环境异常，循环检测60秒")
-		notify.Send("校园网环境异常", "循环检测60秒")
-		for i := 1; i <= 60; i++ {
+		log.Info("校园网环境异常，循环检测", timeout, "秒")
+		notify.Send("校园网环境异常，循环检测", strconv.Itoa(timeout), "秒")
+		for i := 1; i <= timeout; i++ {
 			log.Info("进行第", i, "次检测")
 			if res = TestNet(config.URL["host"]); res {
 				break
@@ -271,18 +274,9 @@ func main() {
 
 	// 检测是否已经登录
 	if TestNet(config.URL["check"]) {
-		log.Info("已经登录，执行下线操作")
+		log.Info("已经登录")
+		notify.Send("已经登录", "网络已连接")
 
-		notify.Send("已经登录", "网络已连接，执行下线操作")
-
-		var msg string
-		if res = Logout(); res {
-			msg = "下线成功"
-		} else {
-			msg = "下线失败"
-		}
-		log.Info(msg)
-		notify.Send(msg)
 		return
 	}
 

@@ -114,8 +114,10 @@ func GetDefaultConfig() Config {
 		ManageHeaders: map[string]string{
 			"Referer": "http://127.0.0.1",
 		},
-		Cookie:  map[string]string{},
-		Options: map[string]string{},
+		Cookie: map[string]string{},
+		Options: map[string]string{
+			"timeout": "60",
+		},
 		ManageParams: map[string]string{
 			"channel":  "",
 			"name":     "",
