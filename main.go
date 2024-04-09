@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gofrs/flock"
@@ -19,55 +18,6 @@ import (
 
 var config *Config
 var notify *Notify
-
-// SendRequest 函数用于执行请求
-func SendRequest(endpoint string, requestData map[string]string) bool {
-	data := url.Values{}
-	for key, value := range requestData {
-		data.Set(key, value)
-	}
-
-	client := &http.Client{}
-	req, err := http.NewRequest("POST", config.URL["host"]+config.URL[endpoint], strings.NewReader(data.Encode()))
-	if err != nil {
-		log.Error("创建请求时发生错误", err)
-		return false
-	}
-
-	for key, value := range config.Headers {
-		req.Header.Add(key, value)
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Error("发送请求时发生错误", err)
-		return false
-	}
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Error("读取响应体时发生错误", err)
-		return false
-	}
-	defer resp.Body.Close()
-
-	// 解析响应体为一个 map
-	var result map[string]interface{}
-	err = json.Unmarshal(bodyBytes, &result)
-	if err != nil {
-		log.Error("解析响应体时发生错误", err)
-		return false
-	}
-
-	// 获取 result 字段
-	res, _ := result["result"]
-	log.Info("响应：", result)
-	if res == "success" {
-		return true
-	} else {
-		log.Error("请求体：", resp.Request)
-		return false
-	}
-}
 
 func KickDevices() bool {
 	// 首先获取cookies
@@ -147,8 +97,8 @@ func KickDevices() bool {
 
 		log.Info("检测到设备：", label, "ip: ", ip)
 
-		// label不包含"电脑"or"路由器"，则踢出
-		if !strings.Contains(label, "电脑") && !strings.Contains(label, "路由器") && !strings.Contains(label, "校园网") {
+		// 包含"电脑"or"路由器"，则踢出
+		if strings.Contains(label, "电脑") || strings.Contains(label, "路由器") {
 			log.Info("踢出设备：", label, " ip: ", ip)
 			// 踢出设备
 			req, err = http.NewRequest("POST", config.URL["manage_host"]+config.URL["kick"], nil)
@@ -184,20 +134,6 @@ func KickDevices() bool {
 	})
 
 	return true
-}
-
-func Login() bool {
-	for i := 0; i < 3; i++ {
-		KickDevices()
-		if SendRequest("login", config.LoginData) {
-			return true
-		}
-	}
-	return false
-}
-
-func Logout() bool {
-	return SendRequest("logout", config.LogoutData)
 }
 
 func TestNet(url string) bool {
@@ -239,7 +175,38 @@ func tryLockFile(path string) (*flock.Flock, error) {
 func main() {
 	InitLog()
 	notify = GetInstanceNotify()
-	config = GetInstance()
+	config = &Config{
+		URL: map[string]string{
+			"host":        "http://210.27.177.172",
+			"manage_host": "http://210.27.185.13:8080",
+			"get_cookie":  "/selfservice/module/userself/web/portal_business_detail.jsf",
+			"get_devices": "/selfservice/module/webcontent/web/onlinedevice_list.jsf",
+			"kick":        "/selfservice/module/userself/web/userself_ajax.jsf",
+		},
+		LoginData: map[string]string{
+			"userId": "210809010107",
+		},
+		Headers: map[string]string{
+			"Content-Type": "application/x-www-form-urlencoded",
+		},
+		ManageHeaders: map[string]string{
+			"Referer": "http://210.27.177.172/",
+		},
+		ManageParams: map[string]string{
+			"channel":  "cG9ydGFs",
+			"name":     "d281ac3212ae6c72b261b19698561587",
+			"password": "7a788f8f412886019a1acacb8f95e9ad",
+			"ip":       "210.27.177.172",
+			"callBack": "portal_business_detail",
+			"index":    "3",
+		},
+		KickParams: map[string]string{
+			"methodName": "indexBean.kickUserBySelfForAjax",
+		},
+		Options: map[string]string{
+			"timeout": "60",
+		},
+	}
 
 	fileLock, err := tryLockFile("./.ruijie.lock")
 	if err != nil {
@@ -263,6 +230,7 @@ func main() {
 			if res = TestNet(config.URL["host"]); res {
 				break
 			}
+			time.Sleep(1 * time.Second)
 		}
 		if !res {
 			log.Fatal("当前不处于校园网环境，退出程序")
@@ -272,20 +240,7 @@ func main() {
 	}
 	log.Info("当前处于校园网环境")
 
-	// 检测是否已经登录
-	if TestNet(config.URL["check"]) {
-		log.Info("已经登录")
-		notify.Send("已经登录", "网络已连接")
-
-		return
-	}
-
-	// 登录
-	if res = Login(); res {
-		log.Info("登录成功")
-		notify.Send("登录成功")
-	} else {
-		log.Error("登录失败")
-		notify.Send("登录失败", "请检查日志")
-	}
+	log.Info("当前为踢出模式")
+	// 断网
+	KickDevices()
 }
