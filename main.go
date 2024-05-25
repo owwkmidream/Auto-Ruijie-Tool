@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -250,6 +251,21 @@ func main() {
 
 	log.Info("程序启动--------------------------------------")
 
+	// 获取命令行参数
+	args := os.Args
+	if len(args) > 1 {
+		switch args[1] {
+		case "logout":
+			for i := 0; i < 3; i++ {
+				if Logout() {
+					log.Info("注销成功")
+					notify.Send("注销成功")
+					return
+				}
+			}
+			return
+		}
+	}
 	// 检测校园网环境，状态码200-299表示正常
 	log.Info("检测校园网环境")
 	res := TestNet(config.URL["host"])
