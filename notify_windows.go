@@ -55,6 +55,10 @@ func CreateIcon() string {
 }
 
 func (n *Notify) Send(msgs ...string) {
+	// 隐藏模式下不弹通知
+	if hideMode == true {
+		return
+	}
 	if len(msgs) < 1 {
 		return
 	}

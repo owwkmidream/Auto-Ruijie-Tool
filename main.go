@@ -20,6 +20,7 @@ import (
 
 var config *Config
 var notify *Notify
+var hideMode bool = false
 
 // SendRequest 函数用于执行请求
 func SendRequest(endpoint string, requestData map[string]string) bool {
@@ -246,6 +247,7 @@ func main() {
 	if err != nil {
 		notify.Send("运行失败", err.Error())
 		log.Fatalf("无法锁定文件: %v", err)
+		return
 	}
 	defer fileLock.Unlock()
 
@@ -264,6 +266,8 @@ func main() {
 				}
 			}
 			return
+		case "hide":
+			hideMode = true
 		}
 	}
 	// 检测校园网环境，状态码200-299表示正常
